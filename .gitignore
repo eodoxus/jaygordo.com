@@ -1,0 +1,5 @@
+/files
+sites/default/files*
+sites/default/settings.php
+/css
+/js

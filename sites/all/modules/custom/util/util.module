@@ -1,0 +1,366 @@
+<?php
+
+/**
+ * Determine whether this page is an admin or backend page.
+ *
+ * @return bool True if the current page is an admin page.
+ */
+function util_is_admin_page(){
+  $args = util_arg();
+  if( $args[0] === 'admin' ){
+    if( isset($args[2]) && $args[2] === 'block' && !isset($args[3]) ) return false;
+
+    return true;
+  }
+}
+
+/**
+ * This is a replacement for the arg() function that should be used if we're
+ * dynamically overriding the path, for example to explicitly set the menu
+ * location or breadcrumb etc.
+ *
+ * @return array A list of all args based on the "Real" path
+ */
+function util_arg(){
+  return split('/', util_get_real_path());
+}
+
+/**
+ * Find the path args based on what's in $_GET['q'].
+ *
+ * @return array A list of all args based on the $_GET['q'] path
+ */
+function util_get_arg(){
+  return split('/', $_GET['q']);
+}
+
+/**
+ * Find the path args based on what's in $_REQUEST['q'].
+ *
+ * @return array A list of all args based on the $_REQUEST['q'] path
+ */
+function util_request_arg(){
+  return split('/', $_REQUEST['q']);
+}
+
+/**
+ * Determine the "Real" path of the page. Sometimes the path gets
+ * altered by us so that we can explicitly set the menu location or breadcrumb.
+ * This function finds what the original URL is that began the request.
+ *
+ * @return string The original URL that began the request.
+ */
+function util_get_real_path(){
+  static $path;
+  if( isset($path) ) return $path;
+  $path = drupal_get_normal_path($_REQUEST['q']);
+
+  if( empty($path) ){
+    $path = $_GET['q'];
+  }
+  return $path;
+}
+
+/**
+ * Determines a page's node context. This is useful when we're in a block on a specific
+ * node's page, and we want the block content to be related to the node.
+ *
+ * @return node The main node of this page. Can be null if not on a specific node page.
+ */
+function util_get_node_context($node=null){
+  // Check the cache first
+  static $context_node;
+  if( isset($context_node) ){
+    if( $node ) $context_node = $node;
+    return $context_node;
+  }
+
+  if( $node ){
+    $context_node = $node;
+    return $context_node;
+  }
+
+  // Because we use menu_set_active_item to change the way the menu highlights
+  // for some nodes, we have to see if we're on a node page.
+  if ((arg(0) == 'node') && is_numeric(arg(1))) {
+    $context_node = node_load(arg(1));
+  }else{
+    $args = util_arg();
+
+    if (($args[0] == 'node') && is_numeric($args[1])) {
+      $context_node = node_load($args[1]);
+    }
+
+    if (($args[0] == 'comments') && is_numeric($args[1])) {
+      $context_node = node_load($args[1]);
+    }
+
+    if (($args[0] == 'comment') && is_numeric($args[2])) {
+      $context_node = node_load($args[2]);
+    }
+  }
+
+  // By now the node is cached, or potentially null. Return it.
+  return $context_node;
+}
+
+/**
+ * Return all possible paths for this page
+ *
+ * @return array A list of possible paths for this page
+ */
+function util_get_page_paths(){
+  $paths[] = drupal_lookup_path('alias', $_GET['q']);
+  $paths[] = drupal_lookup_path('source', $_GET['q']);
+  $paths[] = drupal_lookup_path('alias', $_REQUEST['q']);
+  $paths[] = drupal_lookup_path('source', $_REQUEST['q']);
+
+  $out = array();
+  foreach($paths as $key=>$path){
+    if( in_array($path, $out) ) continue;
+
+    if($path){
+      $out[] = '/'.$path;
+    }
+  }
+
+  return $out;
+}
+
+/**
+ * Sets the breadcrumb based on the path. A path like 'about/the_show' will
+ * procude a breadcrumb like Home / About the View / About the Show. This is
+ * because Home is the parent of About the View whose path is about. Then
+ * About the View is the parent of About the Show whose path is about/the_show.
+ */
+function util_set_breadcrumb(){
+
+  // If we're on a 403, 404, maintenance, or <front> don't do anything
+  global $return;
+  if( is_int($return) || $_GET['q'] === '/' ){
+    return;
+  }
+
+  $parts = util_request_arg();
+  if( !$parts ){
+    $parts = util_get_arg();
+  }
+
+  $breadcrumb[] = l(t('Home'), '');
+  foreach($parts as $part){
+    $rebuilt_path .= $part;
+
+    $title = _util_get_page_title($rebuilt_path);
+    if( $rebuilt_path !== $_REQUEST['q'] ){
+      $breadcrumb[] = l($title, $part);
+    }else{
+      $breadcrumb[] = $title;
+    }
+
+    $rebuilt_path .= '/';
+  }
+
+  if( count($breadcrumb) ){
+    drupal_set_breadcrumb($breadcrumb);
+  }
+}
+
+/**
+ * Finds the title of the page pointed at by $path.
+ *
+ * @param string The path of the page we want the title for.
+ */
+function _util_get_page_title($path){
+
+  $source_path = drupal_lookup_path('source', $path);
+  if( $source_path ){
+    $parts = split('/', $source_path);
+    if( isset($parts[0]) && isset($parts[1]) && $parts[0] === 'node' && is_numeric($parts[1]) ){
+      $title = db_result(db_query("SELECT title FROM {node} WHERE nid=%d", $parts[1]));
+      if( $title ) return $title;
+    }
+  }
+
+  return 'not-found';
+}
+
+/**
+ * Injects a "Read More" link onto the end of a string.
+ *
+ * @param string The path of the page we want the title for.
+ */
+function util_inject_readmore($string, $path, $add_elipsis = false, $ending='</p>'){
+
+  $readmore = ($add_elipsis ? '...' : ' ').theme('read_more', $path);
+  $split_point = strrpos($string, $ending);
+
+  return substr($string, 0, $split_point).$readmore.substr($string, $split_point);
+}
+
+function util_browser(){
+  return strtolower($_SERVER['HTTP_USER_AGENT']);
+}
+
+function util_is_browser_ie6(){
+  return strpos(util_browser(), 'msie 6.0');
+}
+
+function util_dump_to_log($var) {
+	ob_start();
+	var_dump($var);
+	$c = ob_get_contents();
+	ob_end_clean();
+	error_log($c);
+}
+
+/**
+ * Retrieves the number of comments a node has
+ *
+ * @param nodeid
+ * return number of comments
+ */
+function util_comment_count($nid) {
+  if( !$nid ) return 0;
+
+  $q = "SELECT COUNT(cid) AS count FROM `comments` WHERE nid = $nid && status=0";
+  $num_rows = db_result(db_query($q));
+
+  return $num_rows;
+}
+
+
+function util_truncate($content, $len, $suffix='...', $strip_tags=true, $more_link=''){
+
+  if( $strip_tags ){
+    $content = strip_tags($content);
+  }
+
+  // If we don't need to truncate, just return.
+  if( strlen($content) <= $len ) return $content;
+
+  // Don't truncate in the middle of a word. In order to do this
+  // find all the whitespace locations in the $content string. Iterate
+  // through the list, and find the largest location that is not larger
+  // than $len and use it as our truncation point. This way we'll be
+  // sure to truncate on whitespace and have a string that isn't longer than
+  // our required length.
+
+  // If we're on a whitespace character already then the truncate point is ok.
+  $truncate_point = $len;
+  if( !preg_match("/\s|\W/", $char) ){
+
+    // Find all the locations of whitespace.
+
+    preg_match_all("/\s|\W/", $content, $matches, PREG_OFFSET_CAPTURE);
+    // If we find a match, process it, otherwise default to truncating our
+    // string at $len.
+    if( isset($matches[0]) ){
+
+      // Iterate through the list and find the largest index that is not larger
+      // than our desired length, $len.
+      foreach($matches[0] as $match){
+        if( $match[1] < $len ){
+          $cur_index = $match[1];
+        }else{
+          $truncate_point = $cur_index;
+          break;
+        }
+      }
+    }
+  }
+
+  if( $more_link !== '' ){
+    $more_link = theme('more_link', url($more_link), 'more');
+  }
+
+  $content = substr($content, 0, $truncate_point).$suffix.$more_link;
+
+  if( !$strip_tags ){
+    $content = util_closetags($content);
+  }
+  return $content;
+}
+
+function util_closetags ( $html ){
+  // put all opened tags into an array
+  preg_match_all ( "#<([a-z]+)( .*)?(?!/)>#iU", $html, $result );
+  $openedtags = $result[1];
+
+  // put all closed tags into an array
+  preg_match_all ( "#</([a-z]+)>#iU", $html, $result );
+  $closedtags = $result[1];
+  $len_opened = count ( $openedtags );
+  // all tags are closed
+  if( count ( $closedtags ) == $len_opened ){
+    return $html;
+  }
+
+  $openedtags = array_reverse ( $openedtags );
+  // close tags
+  for( $i = 0; $i < $len_opened; $i++ ){
+    if ( !in_array ( $openedtags[$i], $closedtags ) ){
+      $html .= "</" . $openedtags[$i] . ">";
+    }else{
+      unset ( $closedtags[array_search ( $openedtags[$i], $closedtags)] );
+    }
+  }
+
+  return $html;
+}
+
+/**
+ * Takes in a URL to an image, downloads the image, saves it to files/remote_image/[md5(URL)]-[imagename]
+ * and returns the path so that it can be used by imagecache;
+ *
+ * @param string $path URL of image
+ * @return string path to image
+ */
+function util_get_remote_image($path) {
+  $return = "";
+  $base_path = file_directory_path()."/remote_image";
+  if (!file_exists($base_path)) {
+    mkdir($base_path, 0777);
+  }
+
+  $image_name = md5($path).'-'.substr(strrchr($path, '/'), 1); //avoid collisions
+
+  $image_path = $base_path."/".$image_name;
+  if (file_exists($image_path)) { // you already downloaded that image, just return it...
+    $return = $image_path;
+  } else { // download the image...
+    $remote_image = file_get_contents($path);
+    if (!$remote_image) return;
+
+    $local_image  = fopen($image_path, 'w+');
+    if (!$local_image) return;
+
+    fputs($local_image, $remote_image);
+    fclose($local_image);
+    unset($remote_image);
+
+    $return = $image_path;
+  }
+
+  return $return;
+}
+
+/**
+ * Retrieves the vid of the specified vocabulary
+ *
+ * @param vocabulary name
+ * return The vid of the vocabulary
+ */
+function util_get_vid($vocabulary){
+  static $vids;
+
+  // Cache this so we only do 1 query at most.
+  if( $vids[$vocabulary] ) return $vids[$vocabulary];
+
+  if( !$vid = db_result(db_query("SELECT vid FROM {vocabulary} WHERE name='%s'", $vocabulary)) ){
+    return;
+  }
+
+  $vids[$vocabulary] = $vid;
+
+  return $vids[$vocabulary];
+}

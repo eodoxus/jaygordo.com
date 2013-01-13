@@ -1,0 +1,91 @@
+<?php
+
+function tidy_perm(){
+  return array('administer permissions_ext');
+}
+
+function tidy_menu_location_alter(&$vars){
+  $node = util_get_node_context();
+
+  switch ($node->type) {
+    case 'blog':
+
+      // Determine if this is a code example.
+      if ($node->blog_type === t('code')){
+        $bc[] = l(t('Home'), '');
+        $bc[] = l(t('Code Examples'), 'code-examples');
+        drupal_set_breadcrumb($bc);
+        menu_set_active_item('code-examples');
+      } else {
+        $bc[] = l(t('Home'), '');
+        $bc[] = l(t('Blog'), 'blog');
+        drupal_set_breadcrumb($bc);
+        menu_set_active_item('blog');
+      }
+      break;
+    case 'project':
+      $bc[] = l(t('Home'), '');
+      $bc[] = l(t('Portfolio'), 'portfolio');
+       drupal_set_breadcrumb($bc);
+      menu_set_active_item('portfolio');
+      break;
+  }
+}
+
+/**
+ * Hook Nodeapi - Alter node data and node behaviors
+ */
+function tidy_nodeapi(&$node, $op, $teaser=null, $page=null) {
+  switch ($op) {
+    case 'load':
+      switch($node->type){
+        case 'blog':
+          if( !$node->blog_type ){
+            $node->blog_type = tidy_get_blog_type($node);
+          }
+          break;
+      }
+      break;
+  }
+}
+
+/**
+ * Preprosses project nodes. Add posted by info and format the blog image
+ */
+function tidy_preprocess_node(&$vars) {
+  $node = $vars['node'];
+
+  if(!$vars['page'] && $vars['teaser']){
+    $node->content['body']['#value'] .= '<div class="read-more">'.l('Read More &raquo;', 'node/'.$node->nid, array('html'=>true)).'</div>';
+  }
+}
+
+/**
+ * Determines the Program Type that is set on this node.
+ */
+function tidy_get_blog_type($node){
+
+  $type = db_result(db_query("
+    SELECT td.name FROM {term_data} td
+    INNER JOIN {term_node} tn ON tn.tid=td.tid
+    WHERE td.vid=%d AND tn.nid=%d",
+    tidy_get_blog_type_vid(), $node->nid
+  ));
+
+  if (!$type) {
+    $type = t('personal');
+  }
+
+  return $type;
+}
+
+/**
+ * Gets the vid for the Program Type vocabulary.
+ */
+function tidy_get_blog_type_vid(){
+  static $vid;
+  if( isset($vid) ) return $vid;
+
+  $vid = db_result(db_query("SELECT vid FROM {vocabulary} WHERE name='Blog Types'"));
+  return $vid;
+}

@@ -1,0 +1,40 @@
+<?php
+
+function project_ext_theme(){
+  return array(
+    'project_gallery' => array(),
+  );
+}
+
+/**
+ * Preprosses project nodes. Add posted by info and format the blog image
+ */
+function project_ext_preprocess_node(&$vars) {
+  $node = $vars['node'];
+  if( $node->type !== 'project' ) return;
+
+  if($vars['page']){
+    drupal_add_css(drupal_get_path('module', 'project_ext').'/project_ext.css', 'module');
+    $vars['gallery'] = theme('project_gallery', $node);
+  }
+}
+
+function theme_project_gallery($node){
+
+  if (!$node->field_images[0]['fid']) return;
+
+  $items = array();
+  foreach ($node->field_images as $image) {
+    $lightbox_extra_data .= htmlentities('<h3>'.$image['data']['title'].'</h3><p>'.$image['data']['description'].'</p>');
+
+    $item = '<a href="'.url($image['filepath']).'" ';
+    $item .= 'rel="lightshow[group]['.$lightbox_extra_data.'" title="'.$image['data']['title'].'">';
+    $item .= theme('imagecache', '100x100', $image['filepath'], $image['data']['alt'],$image['data']['title']).'</a>';
+
+    $items[] = $item;
+  }
+
+  jcarousel_add('#gallery-'.$node->nid, array('visible' => 4));
+
+  return theme('item_list', $items, t('Screenshots'), 'ul', array('id' => 'gallery-'.$node->nid));
+}

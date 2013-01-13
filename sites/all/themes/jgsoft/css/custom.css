@@ -1,0 +1,199 @@
+/** Layout **/
+#wrapper {
+  float:none;
+}
+#wrapper #container {
+  margin:0 auto;
+  width:90%;
+  padding:0 10px;
+  max-width: 1135px;
+}
+#wrapper #container .sidebar {
+  float:none;
+  width:25%;
+}
+#center {
+  float:none;
+  width:50%;
+}
+/** End Layout **/
+
+/** Project Node **/
+#center .node-project-teaser h2.title
+#center .node-blog-teaser h2.title{
+  border:0;
+  background:none;
+  font-size:18px;
+  font-weight:bold;
+  line-height:20px;
+}
+.node-project-teaser .content .left,
+.node-blog-teaser .content .left{
+  float:left;
+  margin-right:10px;
+}
+.node-project-teaser .content-has-images .right,
+.node-blog-teaser .content-has-images .right{
+}
+
+.node-project-teaser .content p,
+.node-blog-teaser .content p{
+  margin:0;
+}
+
+body.page-node .node ul.images{
+  list-style:none;
+  text-align:center;
+}
+body.page-node .node ul.images li{
+  background:none;
+  display:inline;
+  margin:0 10px 0 0;
+  padding:0;
+}
+/** End Project Node **/
+
+.clear{
+  clear:both;
+}
+
+.quote-wrapper{
+  font-size:26px;
+  font-weight:bold;
+}
+
+#center .view .node  h2.title,
+#center .panel-pane h2.title,
+body.page-taxonomy #center .node h2.title{
+  font-size:1.6em;
+  background-position:0 21px;
+}
+
+.view .node,
+.view .node,
+.view .node,
+body.page-taxonomy .node{
+  border:1px dotted #ccc;
+  margin:10px 0 0 0;
+  padding:10px;
+  position:relative;
+}
+
+/** Front page projects **/
+body.front .view-projects table{
+  margin-top:20px;
+}
+body.front .view-projects td{
+  width:50%;
+  text-align:center;
+}
+body.front .view-projects img{
+  border:1px solid #ddd;
+  padding:1px;
+}
+body.front .view-projects li {
+  float:left;
+}
+body.front .view-projects li.views-row-odd {
+  margin-right:20px;
+}
+/** End Front page projects **/
+
+/** Front page blogs **/
+.view li,
+.view .item-list li{
+  background:none;
+  padding-left:0;
+}
+body.front .view-blogs .views-field-last-updated,
+body.front .view-blogs .views-field-title,
+body.front .view-blogs .views-field-created{
+  display:inline;
+}
+/** End Front page blogs **/
+
+/** Front page code-pages **/
+body.front .view-code-pages li{
+  background:none;
+  padding-left:0;
+}
+body.front .view-code-pages .views-field-tid,
+body.front .view-code-pages .views-field-title{
+  display:inline;
+}
+/** End Front page code-pages **/
+
+/** photos **/
+body.front .view-photos td{
+  width:50%;
+}
+
+.view-photos table{
+  margin-top:20px;
+}
+.view-photos td{
+  width:20%;
+  text-align:center;
+}
+.view-photos img{
+  border:1px solid #ddd;
+  padding:1px;
+}
+.view-photos li {
+  float:left;
+}
+.page-photos .view-photos .view-content li {
+  width: 24%;
+  text-align:center;
+}
+body.front .view-photos li.views-row-odd {
+  margin-right:20px;
+}
+/** End photos **/
+
+a.feed-icon img{
+  margin-top:10px;
+}
+
+.node-page .files{
+  padding:10px;
+  margin-bottom:10px;
+  border:1px dotted #ccc;
+}
+
+#wrapper #container #sidebar-right #block-views-Quotes-block_1 {
+  margin-bottom:20px;
+}
+
+#wrapper #container #sidebar-right #block-block-3 {
+  width:165px;
+  margin:20px auto;
+}
+
+#header-region {
+  position:relative;
+  max-width:1240px;
+  margin:0 auto;
+  float:none;
+}
+#header-region .block-search {
+  position:absolute;
+  right:50px;
+  z-index:2;
+}
+#header-region .block-search label {
+  display:none;
+}
+#header-region .block-search input.form-text {
+  width:200px
+}
+
+div.read-more {
+  position:absolute;
+  bottom:3px;
+  right:10px;
+}
+
+#home .panel-col-1 .read-more {
+  display:none;
+}

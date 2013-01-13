@@ -1,0 +1,32 @@
+
+/*
+ This is a css override to theme the jcourasel.
+*/
+.node-project .jcarousel-skin-tango .jcarousel-container-horizontal {
+  width:430px;
+  height:100px;
+  margin:auto;
+}
+.node-project .jcarousel-skin-tango .jcarousel-clip-horizontal {
+  width:430px;
+  height:100px;
+}
+
+.node-project .jcarousel-skin-tango .jcarousel-clip-horizontal ul {
+  width:410px;
+}
+.node-project .jcarousel-skin-tango .jcarousel-clip-horizontal ul li {
+  list-style:none;
+  width:100px;
+  background:none;
+  padding:0 1px;
+  margin:0;
+}
+.node-project .jcarousel-skin-tango .jcarousel-item {
+  height:100px;
+}
+
+.node-project .jcarousel-skin-tango .jcarousel-prev-horizontal,
+.node-project .jcarousel-skin-tango .jcarousel-next-horizontal {
+  top:56px;
+}

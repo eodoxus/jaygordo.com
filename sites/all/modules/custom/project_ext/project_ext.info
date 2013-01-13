@@ -1,0 +1,5 @@
+name          = "Project Extension"
+description   = "Extends the Project content type."
+package       = "JG Soft"
+core          = "6.x"
+version       = "6.x-1.0"

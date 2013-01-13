@@ -1,0 +1,11 @@
+name = JG Soft
+description = Tableless, multi-column, fluid width theme.
+version = VERSION
+core = 6.x
+engine = phptemplate
+stylesheets[all][] = css/style.css
+stylesheets[all][] = css/custom.css
+
+version = "6.x-1.11"
+core = "6.x"
+project = "JG Sofrt"
