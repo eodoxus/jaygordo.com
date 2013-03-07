@@ -4,6 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php print $language->language ?>" lang="<?php print $language->language ?>" dir="<?php print $language->dir ?>">
 
 <head profile="http://gmpg.org/xfn/11">
+  <meta name="viewport" content="width=760">
   <title><?php print $head_title ?></title>
   <?php print $head ?>
   <?php print $styles ?>
