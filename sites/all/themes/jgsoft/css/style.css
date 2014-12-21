@@ -414,9 +414,6 @@ ul.links li.upload_attachments {
   z-index: 2;
 }
 #wrapper #container #header ul.primary-links {
-  position: absolute;
-  right: 0; /* LTR */
-  bottom: 50px;
   z-index: 1;
 }
 /* With 3 columns, require a minimum width of 1020px to ensure there is enough horizontal space. */
@@ -620,8 +617,8 @@ ul.primary-links {
   list-style: none;
   text-align: center;
   vertical-align: text-bottom;
-  margin: 46px 0 0;
   padding: 0;
+  float:right;
 }
 ul.primary-links li {
   float: left; /* LTR */
