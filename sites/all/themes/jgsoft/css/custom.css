@@ -1,4 +1,8 @@
 /** Layout **/
+#wrapper #container #header #slogan-floater h1.site-name a {
+  border:none;
+}
+
 #wrapper {
   float:none;
 }
@@ -197,4 +201,39 @@ div.read-more {
 
 #home .panel-col-1 .read-more {
   display:none;
+}
+
+
+@media only screen and (min-width : 411px) {
+  body.front .view-projects li .views-field-field-images-fid,
+  body.front .view-projects li .views-field-title,
+  body.front .view-photos li .views-field-field-images-fid,
+  body.front .view-photos li .views-field-title {
+    width:245px;
+    margin:auto;
+  }
+  body.front .view-projects li img {
+    width:245px;
+  }
+}
+
+@media only screen and (max-width : 410px) {
+  #slogan-floater {
+    display:none;
+  }
+}
+@media only screen and (max-width : 410px) {
+
+  body.front .view-projects li,
+  body.front .view-photos li {
+    float: none;
+    width:100%;
+  }
+  body.front .view-projects li .views-field-field-images-fid,
+  body.front .view-projects li .views-field-title,
+  body.front .view-photos li .views-field-field-images-fid,
+  body.front .view-photos li .views-field-title {
+    width:250px;
+    margin:auto;
+  }
 }
