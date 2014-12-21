@@ -31,33 +31,16 @@
   <div id="breadcrumb"><?php print $breadcrumb ?></div>
   <?php if ($mission): print '<div id="mission">'. phptemplate_mission() .'</div>'; endif; ?>
 
-  <table class="frame"><tr>
-    
-    <?php if ($left): ?>
-      
-      <td id="sidebar-left" class="sidebar"><!-- begin sidebar-left -->
-        <?php print $left ?>
-      </td><!-- end sidebar-left -->
-    <?php endif ?>
-    
-    <td id="center">
-      <?php if ($title): print '<h2 class="title'. ($tabs ? ' with-tabs' : '') .'">'. $title .'</h2>'; endif; ?>
-      <?php if ($tabs): print '<div class="tabs">'. $tabs .'</div>'; endif; ?>
-      <?php if ($show_messages && $messages): print $messages; endif; ?>
-      <?php print $help ?>
-      <div class="clear-block">
-        <?php print $content ?>
-      </div>
-      <?php print $feed_icons ?>
-    </td><!-- end center -->
-    
-    <?php if ($right): ?>
-      <td id="sidebar-right" class="sidebar"><!-- begin sidebar-right -->
-        <?php if (!$left && $search_box): ?><div class="block block-theme"><?php print $search_box ?></div><?php endif; ?>
-        <?php print $right ?>
-      </td><!-- end sidebar-right -->
-    <?php endif ?>
-  </tr></table>
+  <div class="content-container">
+    <?php if ($title): print '<h2 class="title'. ($tabs ? ' with-tabs' : '') .'">'. $title .'</h2>'; endif; ?>
+    <?php if ($tabs): print '<div class="tabs">'. $tabs .'</div>'; endif; ?>
+    <?php if ($show_messages && $messages): print $messages; endif; ?>
+    <?php print $help ?>
+    <div class="clear-block">
+      <?php print $content ?>
+    </div>
+    <?php print $feed_icons ?>
+  </div>
     
   <div id="footer"><!-- start footer -->
     <?php print $footer_message ?>

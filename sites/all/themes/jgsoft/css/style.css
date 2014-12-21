@@ -377,7 +377,7 @@ ul.links li.upload_attachments {
 #wrapper {
   float: left;
   width: 100%;
-  background: #FFF url(../images/body.png) repeat-x top left;
+  background: #FFF url(../images/body.png) repeat-x left -34px;
 }
 #wrapper #container {
   max-width: 1240px;
@@ -386,7 +386,7 @@ ul.links li.upload_attachments {
 }
 #wrapper #container #header {
   position: relative;
-  height: 92px;
+  height: 108px;
 }
 #wrapper #container #header #logo {
   position: relative;
@@ -416,7 +416,7 @@ ul.links li.upload_attachments {
 #wrapper #container #header ul.primary-links {
   position: absolute;
   right: 0; /* LTR */
-  bottom: 0;
+  bottom: 50px;
   z-index: 1;
 }
 /* With 3 columns, require a minimum width of 1020px to ensure there is enough horizontal space. */
@@ -424,10 +424,12 @@ body.two-sidebars {
   min-width: 980px;
 }
 /* With 2 columns, require a minimum width of 800px. */
-body.no-sidebars,
 body.sidebar-left,
 body.sidebar-right {
   min-width: 760px;
+}
+body.no-sidebars {
+  min-width:320px;
 }
 /* We must define 100% width to avoid the body being too narrow for near-empty pages */
 #center {
@@ -567,7 +569,9 @@ body.two-sidebars #squeeze {
 #breadcrumb {
   height: 24px;
   font-size: 1em;
-  margin-bottom: 40px;
+  position: absolute;
+  top: 58px;
+  left: 20px;
 }
 .breadcrumb {
   height: 24px;
