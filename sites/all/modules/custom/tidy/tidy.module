@@ -56,7 +56,7 @@ function tidy_preprocess_node(&$vars) {
   $node = $vars['node'];
 
   if(!$vars['page'] && $vars['teaser']){
-    $node->content['body']['#value'] .= '<div class="read-more">'.l('Read More &raquo;', 'node/'.$node->nid, array('html'=>true)).'</div>';
+    $node->content['body']['#value'] .= '<div class="read-more">'.l('more...', 'node/'.$node->nid, array('html'=>true)).'</div>';
   }
 }
 
