@@ -25,9 +25,9 @@ function tidy_menu_location_alter(&$vars){
       break;
     case 'project':
       $bc[] = l(t('Home'), '');
-      $bc[] = l(t('Portfolio'), 'portfolio');
-       drupal_set_breadcrumb($bc);
-      menu_set_active_item('portfolio');
+      $bc[] = l(t('Projects'), 'projects');
+      drupal_set_breadcrumb($bc);
+      menu_set_active_item('projects');
       break;
   }
 }
