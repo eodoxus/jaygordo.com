@@ -1,5 +1,4 @@
 <?php
-// $Id: book.views_convert.inc,v 1.2 2009/06/02 20:31:00 merlinofchaos Exp $
 
 /**
  * @file
@@ -37,7 +36,6 @@ function book_views_convert($display, $type, &$view, $field, $id = NULL) {
               $operators = array('AND' => '=', 'OR' => '=', 'NOT' => '!=');
               $item = $view->get_item($display, 'filter', $id);
               $item['operator'] = $operators[$field['operator']];
-              $item['value'] = $field['value'];
               $item['relationship'] = $view->add_item($display, 'relationship', 'book_parent', 'nid', array(), 'book_parent_nid');
               $item['table'] = 'node';
               $item['field'] = 'nid';

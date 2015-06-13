@@ -1,5 +1,4 @@
 <?php
-// $Id: views_handler_argument.inc,v 1.8 2009/06/02 19:38:33 merlinofchaos Exp $
 
 /**
  * @defgroup views_argument_handlers Handlers for arguments
@@ -46,7 +45,7 @@ class views_handler_argument extends views_handler {
     }
   }
 
-  function init(&$view, &$options) {
+  function init(&$view, $options) {
     parent::init($view, $options);
   }
 
@@ -121,14 +120,14 @@ class views_handler_argument extends views_handler {
       '#default_value' => $this->options['title'],
       '#description' => t('The title to use when this argument is present. It will override the title of the view and titles from previous arguments. You can use percent substitution here to replace with argument titles. Use "%1" for the first argument, "%2" for the second, etc.'),
     );
-    
+
     $form['breadcrumb'] = array(
       '#prefix' => '<div class="clear-block">',
       '#suffix' => '</div>',
       '#type' => 'textfield',
       '#title' => t('Breadcrumb'),
       '#default_value' => $this->options['breadcrumb'],
-      '#description' => t('The Breadcrumb title to use when this argument is present. If no breadcrumb is setted here, default Title values will be used, see "Title" for percent substitutions.'),
+      '#description' => t('The Breadcrumb title to use when this argument is present. If no breadcrumb is set here, default Title values will be used, see "Title" for percent substitutions.'),
     );
 
     $form['clear_start'] = array(
@@ -197,7 +196,7 @@ class views_handler_argument extends views_handler {
       '#default_value' => $this->options['validate_type'],
     );
 
-    $validate_types = array('none' => t('<Basic validation>'));
+    $validate_types = array('none' => t('- Basic validation -'));
     $plugins = views_fetch_plugin_data('argument validator');
     foreach ($plugins as $id => $info) {
       if (!empty($info['no ui'])) {
@@ -689,7 +688,7 @@ class views_handler_argument extends views_handler {
       return FALSE;
     }
 
-    if (isset($this->definition['numeric']) && !isset($this->options['break_phrase']) && !is_numeric($arg)) {
+    if (!empty($this->definition['numeric']) && !isset($this->options['break_phrase']) && !is_numeric($arg)) {
       return FALSE;
     }
 
@@ -750,7 +749,7 @@ class views_handler_argument extends views_handler {
  * @ingroup views_argument_handlers
  */
 class views_handler_argument_broken extends views_handler_argument {
-  function ui_name() {
+  function ui_name($short = FALSE) {
     return t('Broken/missing handler');
   }
 

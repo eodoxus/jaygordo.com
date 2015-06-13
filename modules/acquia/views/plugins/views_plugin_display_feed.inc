@@ -1,5 +1,4 @@
 <?php
-// $Id: views_plugin_display_feed.inc,v 1.4 2009/05/20 02:53:30 merlinofchaos Exp $
 /**
  * @file
  * Contains the feed display plugin.
@@ -30,7 +29,10 @@ class views_plugin_display_feed extends views_plugin_display_page {
   }
 
   function preview() {
-    return '<pre>' . check_plain($this->view->render()) . '</pre>';
+    if (!empty($this->view->live_preview)) {
+      return '<pre>' . check_plain($this->view->render()) . '</pre>';
+    }
+    return $this->view->render();
   }
 
   /**
@@ -160,7 +162,7 @@ class views_plugin_display_feed extends views_plugin_display_page {
    * Perform any necessary changes to the form values prior to storage.
    * There is no need for this function to actually store the data.
    */
-  function options_submit($form, &$form_state) {
+  function options_submit(&$form, &$form_state) {
     // It is very important to call the parent function here:
     parent::options_submit($form, $form_state);
     switch ($form_state['section']) {
@@ -190,6 +192,14 @@ class views_plugin_display_feed extends views_plugin_display_page {
       $clone->set_display($this->display->id);
       $clone->build_title();
       $plugin->attach_to($display_id, $this->get_path(), $clone->get_title());
+
+      // Clean up
+      $clone->destroy();
+      unset($clone);
     }
+  }
+
+  function uses_link_display() {
+    return TRUE;
   }
 }

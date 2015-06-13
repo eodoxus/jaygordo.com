@@ -1,5 +1,4 @@
 <?php
-// $Id: convert.inc,v 1.15 2009/06/02 20:31:00 merlinofchaos Exp $
 /**
  * @file convert.inc
  *
@@ -67,7 +66,57 @@ function views_ui_admin_convert() {
   }
   $output = t('The table below lists Views version 1 views that are stored in the database. You can either convert them to work in Views version 2, or delete them. The views are convertible only if there is no Views 2 view with the same name.');
   $output .= theme('table', $header, $i);
+
+  $output .= drupal_get_form('views_ui_convert_cleanup_form');
   return $output;
+}
+
+/**
+ * Provide form to clean up Views 1 tables.
+ */
+function views_ui_convert_cleanup_form() {
+  $form['verify'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove all Views 1 tables'),
+    '#description' => t('Check this box and then click clean up to drop all Views 1 tables. Warning: this operation will not be reversible! Do this only if you are sure you no longer need this data.'),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clean up'),
+  );
+
+  return $form;
+}
+
+function views_ui_convert_cleanup_form_submit($form, $form_state) {
+  if (empty($form_state['values']['verify'])) {
+    drupal_set_message('Please check the box to verify you want to destroy your Views 1 table data.');
+    return;
+  }
+
+  $ret = array();
+  if (db_table_exists('view_view')) {
+    db_drop_table($ret, 'view_view');
+  }
+  if (db_table_exists('view_sort')) {
+    db_drop_table($ret, 'view_sort');
+  }
+  if (db_table_exists('view_argument')) {
+    db_drop_table($ret, 'view_argument');
+  }
+  if (db_table_exists('view_tablefield')) {
+    db_drop_table($ret, 'view_tablefield');
+  }
+  if (db_table_exists('view_filter')) {
+    db_drop_table($ret, 'view_filter');
+  }
+  if (db_table_exists('view_exposed_filter')) {
+    db_drop_table($ret, 'view_exposed_filter');
+  }
+
+  drupal_set_message(t('All Views 1 tables have been removed.'));
 }
 
 /**
@@ -302,16 +351,23 @@ function views1_import($imported) {
       module_invoke($module, 'views_convert', 'default', 'argument', $view, $field, NULL);
     }
   }
-  foreach ($imported->filter as $field) {
-    $id = $view->add_item('default', 'filter', $field['tablename'], $field['field']);
+  foreach ($imported->filter as $key => $field) {
+    $options = $field['value'] == '' ? array() : array('value' => $field['value']);
+    $id = $view->add_item('default', 'filter', $field['tablename'], $field['field'], $options);
     foreach (module_implements('views_convert') as $module) {
       module_invoke($module, 'views_convert', 'default', 'filter', $view, $field, $id);
+    }
+    // Store the id in the exposed filter if there is one.
+    foreach ($imported->exposed_filter as $key => $filter) {
+      if ($field['tablename'] == $filter['tablename'] && $field['field'] == $filter['field']) {
+        $imported->exposed_filter[$key]['id'] = $id;
+      }
     }
   }
   // Exposed filters now get added to the filter array, not as a separate array.
   $count = 0;
   foreach ($imported->exposed_filter as $field) {
-    list(, $id) = explode('.', $field['field'], 2);
+    $id = $field['id'];
     $item = $view->get_item('default', 'filter', $id);
     if (views_get_handler($item['table'], $item['field'], 'filter')) {
       $item['exposed'] = TRUE;

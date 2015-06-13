@@ -1,5 +1,4 @@
 <?php
-// $Id: views_handler_filter_node_access.inc,v 1.1 2009/06/02 20:09:33 merlinofchaos Exp $
 /**
  * Filter by node_access records.
  */
@@ -17,7 +16,7 @@ class views_handler_filter_node_access extends views_handler_filter {
     if (!user_access('administer nodes')) {
       $table = $this->ensure_my_table();
       $grants = array();
-      foreach (node_access_grants($op, $account) as $realm => $gids) {
+      foreach (node_access_grants('view') as $realm => $gids) {
         foreach ($gids as $gid) {
           $grants[] = "($table.gid = $gid AND $table.realm = '$realm')";
         }

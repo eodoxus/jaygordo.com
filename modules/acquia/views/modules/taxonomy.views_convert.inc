@@ -1,5 +1,4 @@
 <?php
-//$Id: taxonomy.views_convert.inc,v 1.3 2009/06/02 20:31:00 merlinofchaos Exp $
 
 /**
  * @file
@@ -16,16 +15,24 @@
 function taxonomy_views_convert($display, $type, &$view, $field, $id = NULL) {
   switch ($type) {
     case 'field':
-      if ($field['tablename'] == 'term_node' || !strncmp($field['tablename'], 'term_node_', 10)) {
+      $matches = array();
+      if (preg_match('/term_node(_(\d+))?/', $field['tablename'], $matches)) {
         switch ($field['field']) {
           case 'name':
             $item = $view->get_item($display, 'field', $id);
+            $item['table'] = 'term_node';
+            $item['field'] = 'tid';
             if ($field['options'] != 'nolink') {
               $item['link_to_taxonomy'] = TRUE;
             }
             if (!empty($field['vocabulary'])) {
               $item['limit'] = TRUE;
               $item['vids'] = array($field['vocabulary']);
+            }
+            // The vocabulary ID might be embedded in the table name.
+            elseif (!empty($matches[2])) {
+              $item['limit'] = TRUE;
+              $item['vids'] = array($matches[2]);
             }
             $view->set_item($display, 'field', $id, $item);
             break;
@@ -56,7 +63,6 @@ function taxonomy_views_convert($display, $type, &$view, $field, $id = NULL) {
             }
             $item['operator'] = $operators[$field['operator']];
             $item['type'] = 'select';
-            $item['value'] = $field['value'];
             $view->set_item($display, 'filter', $id, $item);
             break;
         }
@@ -66,7 +72,6 @@ function taxonomy_views_convert($display, $type, &$view, $field, $id = NULL) {
           case 'vid':
             $operators = array('AND' => 'in', 'OR' => 'in', 'NOR' => 'not in');
             $view->set_item_option($display, 'filter', $id, 'operator', $operators[$field['operator']]);
-            $view->set_item_option($display, 'filter', $id, 'value', $field['value']);
             break;
         }
       }
