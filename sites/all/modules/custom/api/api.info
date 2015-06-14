@@ -1,0 +1,6 @@
+name          = "API"
+description   = "Provides several services for retrieving content in JSON format."
+package       = "JG Soft"
+core          = "6.x"
+version       = "6.x-1.0"
+dependencies[]  = util

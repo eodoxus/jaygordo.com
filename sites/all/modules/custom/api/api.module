@@ -1,0 +1,117 @@
+<?php
+
+function api_menu() {
+  $items['api/projects'] = array(
+    'page callback' => 'api_get_projects',
+		'access arguments' => array('access content'),
+  );
+	$items['api/photos'] = array(
+    'page callback' => 'api_get_photos',
+		'access arguments' => array('access content'),
+  );
+  return $items;
+}
+
+function api_get_projects($id = NULL) {
+	
+	drupal_set_header('Content-Type: application/json');
+	
+  if ($id) {
+		if ( ! $node = node_load(array('nid' => $id, 'type' => 'project'))) {
+			_api_error_response(404, 'project with id '.$id.' does not exist');
+		}
+		$response = _api_transform_node($node);
+	} else {
+		$input = _api_validate_list_input();
+		$response = _api_get_view_results('projects', $input->page, $input->limit);
+	}
+	
+	die(json_encode($response));
+}
+
+function api_get_photos($id = NULL) {
+	
+	drupal_set_header('Content-Type: application/json');
+	
+  if ($id) {
+		if ( ! $node = node_load(array('nid' => $id, 'type' => 'photo'))) {
+			_api_error_response(404, 'photo with id '.$id.' does not exist');
+		}
+		$response = _api_transform_node($node);
+	} else {
+		$input = _api_validate_list_input();
+		$response = _api_get_view_results('photos', $input->page, $input->limit);
+	}
+	
+	die(json_encode($response));
+}
+
+function _api_validate_list_input() {
+	$page = isset($_GET['page']) ? $_GET['page'] : 0;
+	if ( ! is_numeric($page)) {
+		_api_error_response(400, 'page parameter must be an integer');
+	}
+	$limit = isset($_GET['limit']) ? $_GET['limit'] : 20;
+	if ( ! is_numeric($page)) {
+		_api_error_response(400, 'limit parameter must be an integer');
+	}
+	return (object)array('page' => $page, 'limit' => $limit);
+}
+
+function _api_get_view_results($view_name, $page, $items_per_page) {
+	$view = views_get_view($view_name);
+	$view->set_use_pager(true);
+	$view->set_current_page($page);
+	$view->set_items_per_page($items_per_page);
+	$view->execute();
+	
+	$results = array();
+	foreach ($view->result as $item) {
+		$node = node_load($item->nid);
+		$results[] = _api_transform_node($node);
+	}
+	return $results;
+}
+
+function _api_transform_node($node) {
+	$date_format = 'Y/m/d h:i:s';
+	$result = (object)array(
+		'nid' => $node->nid,
+		'title' => $node->nid,
+		'description' => $node->body,
+		'teaser' => $node->teaser,
+		'created' => date($date_format, $node->created),
+	);
+	
+	switch ($node->type) {
+		case 'project':
+			$result->date = date($date_format, strtotime($node->field_date[0]['value']));
+			$result->url = $node->field_url[0]['url'];
+			$result->images = array();
+			foreach ($node->field_images as $img) {
+				$result->images[] = array(
+					'fid' => $img['fid'],
+					'name' => $img['filename'],
+					'path' => $img['filepath'],
+				);
+			}
+			break;
+	}
+	
+	return $result;
+}
+
+function _api_error_response($code, $msg) {
+	switch($code) {
+		case 400:
+			drupal_set_header('HTTP/1.1 400 Bad Request');
+			break;
+		case 404:
+			drupal_set_header('HTTP/1.1 404 Not Found');
+			break;
+		default:
+			drupal_set_header('HTTP/1.1 500 Internal Server Error');
+	}
+	
+	die(json_encode(array('msg' => $msg)));
+}
