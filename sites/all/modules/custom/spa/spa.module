@@ -1,0 +1,31 @@
+<?php
+
+function spa_menu() {
+  $items['spa-home'] = array(
+    'page callback' => 'spa_home',
+		'access arguments' => array('access content'),
+  );
+  return $items;
+}
+
+function spa_home() {
+	drupal_rebuild_theme_registry ();
+	$data = array(
+		'bio' => node_load(array('title' => "Jason's Bio")),
+	);
+	
+	$content = theme('home_projects');
+	return $content;
+}
+
+function spa_theme() {
+  return array(
+		'home_projects' =>  array(
+      'template' => 'home-projects',
+		),
+  );
+}
+
+function spa_preprocess_page(&$vars) {
+	
+}

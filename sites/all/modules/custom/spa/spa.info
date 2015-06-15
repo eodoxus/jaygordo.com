@@ -1,0 +1,6 @@
+name          = "SPA"
+description   = "Controllers and theming utilities for SPA implementation."
+package       = "JG Soft"
+core          = "6.x"
+version       = "6.x-1.0"
+dependencies[]  = api

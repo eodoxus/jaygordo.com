@@ -1,0 +1,60 @@
+#main-nav {
+  border-bottom: 1px solid #cfcfcf;
+  color: #fff;
+}
+#main-nav > .container {
+  position: relative;
+}
+#main-nav .site-title {
+  font-size: 170%;
+  margin: 23px 0 21px;
+}
+#main-nav a {
+  color: #fff;
+}
+#main-nav a:hover {
+  text-decoration: none;
+  color: #EDF0A8;
+}
+.spa-container {
+  position:relative;
+}
+#selfie {
+  position: absolute;
+  top: 10px;
+  right:0;
+  width: 75px;
+  background: #fff;
+  padding: 3px;
+  cursor: pointer;
+  border: 1px solid #dce4ec;
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+  transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+}
+#selfie img {
+  width:100%;
+}
+.contact-icons {
+  margin: 20px 0 0;
+  text-align: right;
+}
+.contact-icons .btn-default {
+  background-color: #EDF0A8;
+  border-color: #EDF0A8;
+}
+.contact-icons .btn-default i {
+  color: #2C3E50;
+}
+.contact-icons .btn-default:hover i {
+  color: #5D6A77;
+}
+.contact-info {
+  margin:15px 0 0;
+}
+.row-dark {
+  background:#cfcfcf;
+}
+#content {
+  padding-top:5%;
+}
