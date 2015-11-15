@@ -899,7 +899,7 @@ function theme_imagecache($presetname, $path, $alt = '', $title = '', $attribute
     $ours += array('width' => $image['width'], 'height' => $image['height']);
   }
 
-  return '<img' . drupal_attributes($ours + $attributes) . '/>';
+  return '<img' . drupal_attributes(array_merge($ours, $attributes)) . '/>';
 }
 
 /**
