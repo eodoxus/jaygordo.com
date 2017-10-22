@@ -1,0 +1,24 @@
+<?php
+
+function codewarrior_menu() {
+  $items['codewarrior'] = array(
+		'page callback' => 'codewarrior_home',
+		'access arguments' => array('access content'),
+	);
+  return $items;
+}
+
+function codewarrior_home() {
+	return '';
+}
+
+function codewarrior_theme_registry_alter(&$theme_registry) {
+  // A list of templates the module will provide templates for
+  $hooks = array('page');
+
+  foreach ($hooks as $h) {
+    // Add the module path on top in the array of paths
+    array_unshift($theme_registry[$h]['theme paths'], drupal_get_path('module', 'codewarrior'));
+  }
+}
+
