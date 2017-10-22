@@ -1,21 +1,41 @@
 <?php
 
 function api_menu() {
-  $items['api/projects'] = array(
-    'page callback' => 'api_get_projects',
+  $items['api/site'] = array(
+    'page callback' => 'api_get_site',
 		'access arguments' => array('access content'),
-  );
+	);
 	$items['api/photos'] = array(
     'page callback' => 'api_get_photos',
+		'access arguments' => array('access content'),
+	);
+	$items['api/projects'] = array(
+    'page callback' => 'api_get_projects',
 		'access arguments' => array('access content'),
   );
   return $items;
 }
 
-function api_get_projects($id = NULL) {
-	
+function _api_resond($response) {
 	drupal_set_header('Content-Type: application/json');
-	
+	drupal_set_header('Access-Control-Allow-Origin: *');
+	die(json_encode($response));
+}
+
+function api_get_photos($id = NULL) {
+  if ($id) {
+		$response = _api_load_photo($id);
+		if ( ! $response) {
+			_api_error_response(404, 'photo with id '.$id.' does not exist');
+		}
+	} else {
+		$input = _api_validate_list_input();
+		$response = _api_query_photos($input->page, $input->limit);
+	}
+	_api_resond($response);
+}
+
+function api_get_projects($id = NULL) {
   if ($id) {
 		if ( ! $node = node_load(array('nid' => $id, 'type' => 'project'))) {
 			_api_error_response(404, 'project with id '.$id.' does not exist');
@@ -23,27 +43,53 @@ function api_get_projects($id = NULL) {
 		$response = _api_transform_node($node);
 	} else {
 		$input = _api_validate_list_input();
-		$response = _api_get_view_results('projects', $input->page, $input->limit);
+		$response = _api_get_view_results('projects', NULL, $input->page, $input->limit);
 	}
-	
-	die(json_encode($response));
+	_api_resond($response);
 }
 
-function api_get_photos($id = NULL) {
-	
-	drupal_set_header('Content-Type: application/json');
-	
-  if ($id) {
-		if ( ! $node = node_load(array('nid' => $id, 'type' => 'photo'))) {
-			_api_error_response(404, 'photo with id '.$id.' does not exist');
-		}
-		$response = _api_transform_node($node);
-	} else {
-		$input = _api_validate_list_input();
-		$response = _api_get_view_results('photos', $input->page, $input->limit);
+function api_get_site($id = NULL) {
+	global $base_url;
+	$response = new stdClass();
+	$response->avatar = $base_url.'/sites/default/files/images/green_instgrm.JPG';
+	$response->email 	= variable_get('site_mail');
+	$response->footer = variable_get('site_footer');
+	$response->home 	= variable_get('site_frontpage');
+	$response->name 	= variable_get('site_name');
+	$response->phone 	= variable_get('site_phone');
+	$response->slogan = variable_get('site_slogan');
+	_api_resond($response);
+}
+
+function _api_query_photos($page = 1, $limit = 20) {
+	$sql = _api_get_photos_query()." and n.type <> 'project' limit $limit offset ".($page * $limit);
+	$rslt = db_query($sql);
+	$records = array();
+	while ($obj = db_fetch_object($rslt)) {
+		$obj->meta = unserialize($obj->meta);
+		$records[] = $obj;
 	}
-	
-	die(json_encode($response));
+	return $records;
+}
+
+function _api_load_photo($id) {
+	$sql = _api_get_photos_query()." and f.fid = ".mysql_real_escape_string($id);
+	$rslt = db_query($sql);
+	$obj = db_fetch_object($rslt);
+	$obj->meta = unserialize($obj->meta);
+	return $obj;
+}
+
+function _api_transform_photo($photo) {
+	$photo->meta = unserialize($photo->meta);
+	return $photo;
+}
+
+function _api_get_photos_query() {
+	return "select f.fid, f.filepath, n.title, ci.field_images_data as meta from files f
+		join content_field_images ci on ci.field_images_fid = f.fid
+		join node n on n.nid = ci.nid
+		where ci.field_images_fid is not null";
 }
 
 function _api_validate_list_input() {
@@ -58,8 +104,11 @@ function _api_validate_list_input() {
 	return (object)array('page' => $page, 'limit' => $limit);
 }
 
-function _api_get_view_results($view_name, $page, $items_per_page) {
+function _api_get_view_results($view_name, $display_id = NULL, $page, $items_per_page) {
 	$view = views_get_view($view_name);
+	if (is_string($display_id)) {
+      $view->set_display($display_id);
+    }
 	$view->set_use_pager(true);
 	$view->set_current_page($page);
 	$view->set_items_per_page($items_per_page);
@@ -75,9 +124,18 @@ function _api_get_view_results($view_name, $page, $items_per_page) {
 
 function _api_transform_node($node) {
 	$date_format = 'Y/m/d h:i:s';
+	
+	switch($view_name) {
+		case 'projects':
+			break;
+		case 'photos':
+			break;
+	}
+	
 	$result = (object)array(
 		'nid' => $node->nid,
-		'title' => $node->nid,
+		'link' => url('node/'.$node->nid),
+		'title' => $node->title,
 		'description' => $node->body,
 		'teaser' => $node->teaser,
 		'created' => date($date_format, $node->created),
