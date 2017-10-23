@@ -1,5 +1,7 @@
 /files
 sites/default/files*
 sites/default/settings.php
+sites/all/modules/custom/codewarrior/public*
+sites/all/modules/custom/codewarrior/page-codewarrior.tpl.php
 /css
 /js
