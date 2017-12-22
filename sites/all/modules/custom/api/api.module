@@ -1,11 +1,11 @@
 <?php
 
 function api_menu() {
-  $items['api/site'] = array(
-    'page callback' => 'api_get_site',
+  $items['api/game_saves'] = array(
+    'page callback' => 'api_game_saves',
 		'access arguments' => array('access content'),
-	);
-	$items['api/photos'] = array(
+  );
+  $items['api/photos'] = array(
     'page callback' => 'api_get_photos',
 		'access arguments' => array('access content'),
 	);
@@ -13,13 +13,81 @@ function api_menu() {
     'page callback' => 'api_get_projects',
 		'access arguments' => array('access content'),
   );
-  return $items;
+  $items['api/site'] = array(
+    'page callback' => 'api_get_site',
+		'access arguments' => array('access content'),
+	);
+	return $items;
 }
 
 function _api_resond($response) {
 	drupal_set_header('Content-Type: application/json');
-	drupal_set_header('Access-Control-Allow-Origin: *');
+  drupal_set_header('Access-Control-Allow-Origin: *');
+  drupal_set_header('Access-Control-Allow-Headers: *');
 	die(json_encode($response));
+}
+
+function api_game_saves($id = NULL) {
+  switch ($_SERVER['REQUEST_METHOD']) {
+    case 'GET':
+      if ($id) {
+        $response = api_get_game_save($id);
+      } else if ($_GET['token']) {
+        $response = api_load_game_saves_by_token($_GET['token']);
+      }
+      break;  
+    case 'OPTIONS':
+      $response = '';
+      break;
+    case 'PUT':
+    case 'POST':
+      $response = '';
+      $input = json_decode(file_get_contents('php://input'));
+      if ($input) {
+        $game_save = json_decode($input);
+        $response = api_save_game_save($game_save);
+      }
+      break;
+  }
+	_api_resond($response);  
+}
+
+function api_get_game_save($id) {
+  $response = _api_load_game_save($id);
+  if ( ! $response) {
+    _api_error_response(404, 'game save with id '.$id.' does not exist');
+  }
+  return $response;
+}
+
+function api_load_game_saves_by_token($token) {
+	$rslt = db_query("select * from game_saves where token = '%s'", $token);
+	$records = array();
+	while ($obj = db_fetch_object($rslt)) {
+		$obj->data = json_decode($obj->data);
+		$records[] = $obj;
+	}
+	return $records;
+}
+
+function api_save_game_save($game_save) {
+  if (!isset($game_save->token)) {
+    _api_error_response(400, 'game save must have a token field');
+  }
+  if (!isset($game_save->slot)) {
+    _api_error_response(400, 'game save must have a slot field');
+  }
+  if (!isset($game_save->data)) {
+    _api_error_response(400, 'game save must have a data field');
+  }
+  if (isset($game_save->id)) {
+    db_query("UPDATE {game_saves} SET data='%s'", json_encode($game_save->data));
+  } else {
+    $sql = "INSERT INTO {game_saves} (token, slot, data) VALUES ('%s', '%d', '%s')";
+    db_query($sql, $game_save->token, $game_save->slot, json_encode($game_save->data));
+    $game_save->id = db_last_insert_id('game_saves');
+  }
+  return $game_save;
 }
 
 function api_get_photos($id = NULL) {
@@ -59,6 +127,13 @@ function api_get_site($id = NULL) {
 	$response->phone 	= variable_get('site_phone');
 	$response->slogan = variable_get('site_slogan');
 	_api_resond($response);
+}
+
+function _api_load_game_save($id) {
+  $sql = "select * from game_saves where id = ".mysql_real_escape_string($id);
+	$rslt = db_query($sql);
+	$obj = db_fetch_object($rslt);
+	return $obj;
 }
 
 function _api_query_photos($page = 1, $limit = 20) {
