@@ -3,183 +3,54 @@
 function api_menu() {
   $items['api/game_saves'] = array(
     'page callback' => 'api_game_saves',
-		'access arguments' => array('access content'),
+    'access arguments' => array('access content'),
+    'file' => 'api_game_saves.inc',
   );
   $items['api/photos'] = array(
     'page callback' => 'api_get_photos',
-		'access arguments' => array('access content'),
+    'access arguments' => array('access content'),
+    'file' => 'api_photos.inc',
 	);
 	$items['api/projects'] = array(
     'page callback' => 'api_get_projects',
-		'access arguments' => array('access content'),
+    'access arguments' => array('access content'),
+    'file' => 'api_projects.inc',
   );
   $items['api/site'] = array(
     'page callback' => 'api_get_site',
-		'access arguments' => array('access content'),
+    'access arguments' => array('access content'),
+    'file' => 'api_site.inc',
 	);
 	return $items;
 }
 
-function _api_resond($response) {
+function api_resond($response) {
 	drupal_set_header('Content-Type: application/json');
   drupal_set_header('Access-Control-Allow-Origin: *');
   drupal_set_header('Access-Control-Allow-Headers: *');
 	die(json_encode($response));
 }
 
-function api_game_saves($id = NULL) {
-  switch ($_SERVER['REQUEST_METHOD']) {
-    case 'GET':
-      if ($id) {
-        $response = api_get_game_save($id);
-      } else if ($_GET['token']) {
-        $response = api_load_game_saves_by_token($_GET['token']);
-      }
-      break;  
-    case 'OPTIONS':
-      $response = '';
-      break;
-    case 'PUT':
-    case 'POST':
-      $response = '';
-      $input = json_decode(file_get_contents('php://input'));
-      if ($input) {
-        $game_save = json_decode($input);
-        $response = api_save_game_save($game_save);
-      }
-      break;
+function api_get_post_data() {
+  $input = json_decode(file_get_contents('php://input'));
+  if ($input) {
+    return json_decode($input);
   }
-	_api_resond($response);  
 }
 
-function api_get_game_save($id) {
-  $response = _api_load_game_save($id);
-  if ( ! $response) {
-    _api_error_response(404, 'game save with id '.$id.' does not exist');
-  }
-  return $response;
-}
-
-function api_load_game_saves_by_token($token) {
-	$rslt = db_query("select * from game_saves where token = '%s'", $token);
-	$records = array();
-	while ($obj = db_fetch_object($rslt)) {
-		$obj->data = json_decode($obj->data);
-		$records[] = $obj;
-	}
-	return $records;
-}
-
-function api_save_game_save($game_save) {
-  if (!isset($game_save->token)) {
-    _api_error_response(400, 'game save must have a token field');
-  }
-  if (!isset($game_save->slot)) {
-    _api_error_response(400, 'game save must have a slot field');
-  }
-  if (!isset($game_save->data)) {
-    _api_error_response(400, 'game save must have a data field');
-  }
-  if (isset($game_save->id)) {
-    db_query("UPDATE {game_saves} SET data='%s'", json_encode($game_save->data));
-  } else {
-    $sql = "INSERT INTO {game_saves} (token, slot, data) VALUES ('%s', '%d', '%s')";
-    db_query($sql, $game_save->token, $game_save->slot, json_encode($game_save->data));
-    $game_save->id = db_last_insert_id('game_saves');
-  }
-  return $game_save;
-}
-
-function api_get_photos($id = NULL) {
-  if ($id) {
-		$response = _api_load_photo($id);
-		if ( ! $response) {
-			_api_error_response(404, 'photo with id '.$id.' does not exist');
-		}
-	} else {
-		$input = _api_validate_list_input();
-		$response = _api_query_photos($input->page, $input->limit);
-	}
-	_api_resond($response);
-}
-
-function api_get_projects($id = NULL) {
-  if ($id) {
-		if ( ! $node = node_load(array('nid' => $id, 'type' => 'project'))) {
-			_api_error_response(404, 'project with id '.$id.' does not exist');
-		}
-		$response = _api_transform_node($node);
-	} else {
-		$input = _api_validate_list_input();
-		$response = _api_get_view_results('projects', NULL, $input->page, $input->limit);
-	}
-	_api_resond($response);
-}
-
-function api_get_site($id = NULL) {
-	global $base_url;
-	$response = new stdClass();
-	$response->avatar = $base_url.'/sites/default/files/images/green_instgrm.JPG';
-	$response->email 	= variable_get('site_mail');
-	$response->footer = variable_get('site_footer');
-	$response->home 	= variable_get('site_frontpage');
-	$response->name 	= variable_get('site_name');
-	$response->phone 	= variable_get('site_phone');
-	$response->slogan = variable_get('site_slogan');
-	_api_resond($response);
-}
-
-function _api_load_game_save($id) {
-  $sql = "select * from game_saves where id = ".mysql_real_escape_string($id);
-	$rslt = db_query($sql);
-	$obj = db_fetch_object($rslt);
-	return $obj;
-}
-
-function _api_query_photos($page = 1, $limit = 20) {
-	$sql = _api_get_photos_query()." and n.type <> 'project' limit $limit offset ".($page * $limit);
-	$rslt = db_query($sql);
-	$records = array();
-	while ($obj = db_fetch_object($rslt)) {
-		$obj->meta = unserialize($obj->meta);
-		$records[] = $obj;
-	}
-	return $records;
-}
-
-function _api_load_photo($id) {
-	$sql = _api_get_photos_query()." and f.fid = ".mysql_real_escape_string($id);
-	$rslt = db_query($sql);
-	$obj = db_fetch_object($rslt);
-	$obj->meta = unserialize($obj->meta);
-	return $obj;
-}
-
-function _api_transform_photo($photo) {
-	$photo->meta = unserialize($photo->meta);
-	return $photo;
-}
-
-function _api_get_photos_query() {
-	return "select f.fid, f.filepath, n.title, ci.field_images_data as meta from files f
-		join content_field_images ci on ci.field_images_fid = f.fid
-		join node n on n.nid = ci.nid
-		where ci.field_images_fid is not null";
-}
-
-function _api_validate_list_input() {
+function api_validate_list_input() {
 	$page = isset($_GET['page']) ? $_GET['page'] : 0;
 	if ( ! is_numeric($page)) {
-		_api_error_response(400, 'page parameter must be an integer');
+		api_error_response(400, 'page parameter must be an integer');
 	}
 	$limit = isset($_GET['limit']) ? $_GET['limit'] : 20;
 	if ( ! is_numeric($page)) {
-		_api_error_response(400, 'limit parameter must be an integer');
+		api_error_response(400, 'limit parameter must be an integer');
 	}
 	return (object)array('page' => $page, 'limit' => $limit);
 }
 
-function _api_get_view_results($view_name, $display_id = NULL, $page, $items_per_page) {
+function api_get_view_results($view_name, $display_id = NULL, $page, $items_per_page) {
 	$view = views_get_view($view_name);
 	if (is_string($display_id)) {
       $view->set_display($display_id);
@@ -188,25 +59,25 @@ function _api_get_view_results($view_name, $display_id = NULL, $page, $items_per
 	$view->set_current_page($page);
 	$view->set_items_per_page($items_per_page);
 	$view->execute();
-	
+
 	$results = array();
 	foreach ($view->result as $item) {
 		$node = node_load($item->nid);
-		$results[] = _api_transform_node($node);
+		$results[] = api_transform_node($node);
 	}
 	return $results;
 }
 
-function _api_transform_node($node) {
+function api_transform_node($node) {
 	$date_format = 'Y/m/d h:i:s';
-	
+
 	switch($view_name) {
 		case 'projects':
 			break;
 		case 'photos':
 			break;
 	}
-	
+
 	$result = (object)array(
 		'nid' => $node->nid,
 		'link' => url('node/'.$node->nid),
@@ -215,7 +86,7 @@ function _api_transform_node($node) {
 		'teaser' => $node->teaser,
 		'created' => date($date_format, $node->created),
 	);
-	
+
 	switch ($node->type) {
 		case 'project':
 			$result->date = date($date_format, strtotime($node->field_date[0]['value']));
@@ -230,11 +101,11 @@ function _api_transform_node($node) {
 			}
 			break;
 	}
-	
+
 	return $result;
 }
 
-function _api_error_response($code, $msg) {
+function api_error_response($code, $msg) {
 	switch($code) {
 		case 400:
 			drupal_set_header('HTTP/1.1 400 Bad Request');
@@ -245,6 +116,6 @@ function _api_error_response($code, $msg) {
 		default:
 			drupal_set_header('HTTP/1.1 500 Internal Server Error');
 	}
-	
+
 	die(json_encode(array('msg' => $msg)));
 }
