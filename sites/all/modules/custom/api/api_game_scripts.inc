@@ -4,7 +4,7 @@ function api_game_scripts($id = NULL) {
   if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $game_script = api_get_post_data();
     if ($game_script) {
-      $response = api_save_game_script($game_save);
+      $response = api_save_game_script($game_script);
     }
   } else {
     if ($id) {

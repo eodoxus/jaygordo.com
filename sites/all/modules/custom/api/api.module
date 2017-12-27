@@ -6,6 +6,11 @@ function api_menu() {
     'access arguments' => array('access content'),
     'file' => 'api_game_saves.inc',
   );
+  $items['api/game_scripts'] = array(
+    'page callback' => 'api_game_scripts',
+    'access arguments' => array('access content'),
+    'file' => 'api_game_scripts.inc',
+  );
   $items['api/photos'] = array(
     'page callback' => 'api_get_photos',
     'access arguments' => array('access content'),
@@ -106,6 +111,8 @@ function api_transform_node($node) {
 }
 
 function api_error_response($code, $msg) {
+  drupal_set_header('Access-Control-Allow-Origin: *');
+  drupal_set_header('Access-Control-Allow-Headers: *');
 	switch($code) {
 		case 400:
 			drupal_set_header('HTTP/1.1 400 Bad Request');
