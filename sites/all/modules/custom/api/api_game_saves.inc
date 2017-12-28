@@ -50,7 +50,7 @@ function api_save_game_save($game_save) {
   } else {
     $sql = "INSERT INTO {game_saves} (token, slot, data) VALUES ('%s', %d, '%s')";
     db_query($sql, $game_save->token, $game_save->slot, json_encode($game_save->data));
-    $game_save->id = db_last_insert_id('game_saves');
+    $game_save->id = db_last_insert_id('game_saves', 'id');
   }
   return $game_save;
 }

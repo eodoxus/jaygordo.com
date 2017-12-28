@@ -42,7 +42,7 @@ function api_save_game_script($game_script) {
   } else {
     $sql = "INSERT INTO {game_scripts} (game_save_id, data) VALUES (%d, '%s')";
     db_query($sql, $game_script->game_save_id, json_encode($game_script->data));
-    $game_script->id = db_last_insert_id('game_scripts');
+    $game_script->id = db_last_insert_id('game_scripts', 'id');
   }
   return $game_script;
 }
