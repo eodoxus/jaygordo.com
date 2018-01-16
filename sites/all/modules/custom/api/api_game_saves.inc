@@ -26,7 +26,7 @@ function api_get_game_save($id) {
 }
 
 function api_load_game_saves_by_token($token) {
-	$rslt = db_query("select * from game_saves where token = '%s'", $token);
+	$rslt = db_query("select * from game_saves where token = '%s' order by id asc", $token);
 	$records = array();
 	while ($obj = db_fetch_object($rslt)) {
 		$obj->data = json_decode($obj->data);

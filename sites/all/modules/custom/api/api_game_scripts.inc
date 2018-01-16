@@ -22,7 +22,7 @@ function api_load_game_scripts_by_token($token) {
   if (!$game_save) {
     return;
   }
-  $rslt = db_query("select * from game_scripts where game_save_id = %d", $game_save->id);
+  $rslt = db_query("select * from game_scripts where game_save_id = %d order by id asc", $game_save->id);
 	while ($obj = db_fetch_object($rslt)) {
 		$obj->data = json_decode($obj->data);
 		$records[] = $obj;
